@@ -90,7 +90,7 @@ export class Lokalise extends Command {
 // ANY CHANGES MADE TO THIS FILE WILL BE LOST
 
 export interface Translations {
-  ${ keyNames.map((key: string) => (key.split('.').length > 1 ? `'${ key }'` : key).concat(': string')).join(';\n  ') }
+  ${ keyNames.map((key: string) => (key.split('.').length > 1 ? `'${ key }'` : key).concat(': string;')).join('\n  ') }
 }
     `;
     await outputFile(interfaceOutputPath + '/' + interfaceOutputName, interfaceContent, { encoding: 'utf8' });
