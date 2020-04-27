@@ -10,6 +10,8 @@ export const lokaliseCommand: CliCommand = {
       name: 'apiKey',
       alias: 'api',
       description: 'Lokalise API Token',
+      message: 'What is Lokalise API key?',
+      validationMessage: 'API key cannot be emptied',
       required: true,
     },
     {
@@ -17,6 +19,8 @@ export const lokaliseCommand: CliCommand = {
       name: 'projectId',
       alias: 'pid',
       description: 'Lokalise Project ID',
+      message: 'What is Lokalise Project ID?',
+      validationMessage: 'Project ID cannot be emptied',
       required: true,
     },
     {
@@ -24,7 +28,8 @@ export const lokaliseCommand: CliCommand = {
       name: 'translationsOutputPath',
       alias: 'top',
       description: 'Path of the Translations output',
-      default: 'src/assets/i18n',
+      default: './src/assets/i18n',
+      message: 'Where to generate the translations JSON?',
       required: false,
     },
     {
@@ -32,7 +37,8 @@ export const lokaliseCommand: CliCommand = {
       name: 'interfaceOutputPath',
       alias: 'iop',
       description: 'Path of the TypeScript Interface output',
-      default: 'src',
+      default: './src',
+      message: 'Where to generate the TypeScript interface file?',
       required: false,
     },
     {
@@ -41,6 +47,7 @@ export const lokaliseCommand: CliCommand = {
       alias: 'ion',
       description: 'Name of TypeScript Interface file',
       default: 'translations.types.ts',
+      message: 'What to call the TypeScript interface file?',
       required: false,
     },
   ],

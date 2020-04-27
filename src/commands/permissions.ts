@@ -7,23 +7,22 @@ import { CommandsMap } from '../ioc';
 import { CommandMap, PermissionsCommandOption } from '../models';
 import { Logger } from '../utils';
 import { Command } from './command';
-import { permissionsCommand } from './permissions-command';
 
 @singleton()
-export class Permissions extends Command<typeof permissionsCommand> {
+export class Permissions extends Command {
   private optionsLoader: Ora = ora();
   private fetchLoader: Ora = ora();
   private generateLoader: Ora = ora();
 
   constructor(@inject(Logger) readonly _logger: Logger, @inject(CommandsMap) readonly _commandsMap: CommandMap) {
-    super(_logger, _commandsMap['permissions']);
+    super(_logger, _commandsMap, 'permissions');
   }
 
   async run(args: string[]) {
     this.logger.info(this.command.description);
     if (!args.length) {
       this.optionsLoader.start('Fetching existing options...');
-      const existOptions = await this.getExistOptions<PermissionsCommandOption>('permissions');
+      const existOptions = await this.getExistOptions<PermissionsCommandOption>();
       if (existOptions) {
         this.optionsLoader.succeed('Found existing options. Executing with the following:');
         this.logger.log(JSON.stringify(existOptions, null, 2));
@@ -46,7 +45,7 @@ export class Permissions extends Command<typeof permissionsCommand> {
         })));
 
         this.optionsLoader.start('Storing options...');
-        await this.storeOptions('permissions', options);
+        await this.storeOptions(options);
         this.optionsLoader.succeed('Stored options');
         await this.fetchAndGenerate(options);
         return 0;

@@ -1,5 +1,5 @@
 import { inject, singleton } from 'tsyringe';
-import { Permissions } from './commands';
+import { Lokalise, Permissions } from './commands';
 import { CliArguments, CommandsMap } from './ioc';
 import { CommandMap } from './models';
 import { Logger } from './utils';
@@ -11,6 +11,7 @@ export class CLI {
     @inject(CommandsMap) private readonly commandsMap: CommandMap,
     @inject(Logger) private readonly logger: Logger,
     @inject(Permissions) private readonly permissionsCommand: Permissions,
+    @inject(Lokalise) private readonly lokaliseCommand: Lokalise,
   ) {
   }
 
@@ -27,6 +28,7 @@ export class CLI {
         return this.permissionsCommand.run(commandArgs);
       case 'lokalise':
       case 'l':
+        return this.lokaliseCommand.run(commandArgs);
       default:
         return 0;
     }

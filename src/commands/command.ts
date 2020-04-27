@@ -1,19 +1,28 @@
 import { existsSync, outputJson, pathExists, readJson } from 'fs-extra';
-import { CliCommand } from '../models';
+import { CliCommand, CommandMap } from '../models';
 import { Logger } from '../utils';
 
-export abstract class Command<TCommandType extends CliCommand = any> {
-  protected constructor(protected readonly logger: Logger, protected readonly command: TCommandType) {
+export abstract class Command {
+  protected commandKey: string;
+  protected command: CliCommand;
+
+  protected constructor(
+    protected readonly logger: Logger,
+    protected readonly commandsMap: CommandMap,
+    commandKey: string,
+  ) {
+    this.commandKey = commandKey;
+    this.command = commandsMap[this.commandKey];
   }
 
-  protected async getExistOptions<TOption = any>(commandName: string): Promise<TOption | null> {
+  protected async getExistOptions<TOption = any>(): Promise<TOption | null> {
     const cwd = process.cwd();
     const optionPath = cwd + '/.architectnow';
     if (!(await pathExists(optionPath))) {
       return null;
     }
 
-    const filePath = optionPath + '/' + commandName + '.json';
+    const filePath = optionPath + '/' + this.commandKey + '.json';
     if (!existsSync(filePath)) {
       return null;
     }
@@ -21,10 +30,10 @@ export abstract class Command<TCommandType extends CliCommand = any> {
     return readJson(filePath);
   }
 
-  protected async storeOptions<TOption = any>(commandName: string, options: TOption): Promise<void> {
+  protected async storeOptions<TOption = any>(options: TOption): Promise<void> {
     const cwd = process.cwd();
     const optionPath = cwd + '/.architectnow';
-    await outputJson(optionPath + '/' + commandName + '.json', options);
+    await outputJson(optionPath + '/' + this.commandKey + '.json', options);
   }
 
   protected async printHelp() {
