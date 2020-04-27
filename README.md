@@ -43,10 +43,10 @@ Generate a permissions TypeScript enum from an API endpoint that exposes permiss
       "ResourceNameItemName2": "grouping.resource.item2",
    },
    "GroupingName2": {
-         "ResourceName": "grouping2.resource",
-         "ResourceName2": "grouping2.resource2",
-         "ResourceNameItemName": "grouping2.resource.item",
-         "ResourceNameItemName2": "grouping2.resource.item2",
+      "ResourceName": "grouping2.resource",
+      "ResourceName2": "grouping2.resource2",
+      "ResourceNameItemName": "grouping2.resource.item",
+      "ResourceNameItemName2": "grouping2.resource.item2",
   }
 }
 ```
@@ -82,7 +82,7 @@ architectnow l
 ```
 
 - Command name: `lokalise`
-- Alias: 'l'
+- Alias: `l`
 - Options:
     - `apiKey`: Lokalise API Key
     - `projectId`: Project ID on Lokalise
