@@ -1,7 +1,7 @@
 {
   "version": "0.0.0-development",
   "license": "MIT",
-  "name": "cli",
+  "name": "@architectnow/cli",
   "author": "Chau Tran",
   "repository": {
     "type": "git",
