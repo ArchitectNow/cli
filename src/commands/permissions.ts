@@ -84,7 +84,7 @@ export class Permissions extends Command {
 // ANY CHANGES MADE TO THIS FILE WILL BE LOST
 
 export enum PermissionNames {
-  ${ enumValues.join(',\n  ') }
+  ${ enumValues.sort().join(',\n  ') }
 }
       `;
 
