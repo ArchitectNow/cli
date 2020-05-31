@@ -80,7 +80,7 @@
     "node-fetch": "^2.6.0",
     "ora": "4.0.4",
     "reflect-metadata": "0.1.13",
-    "tsyringe": "4.1.0"
+    "tsyringe": "4.3.0"
   },
   "config": {
     "commitizen": {
