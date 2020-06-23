@@ -62,16 +62,18 @@ export class Lokalise extends Command {
     const lokalise = new LokaliseApi({ apiKey });
 
     this.fetchLoader.start('Fetching translations keys...');
-    const keys: Key[] = await lokalise.keys.list({ project_id: projectId, limit: 5000, include_translations: 1 });
-    const langs: Language[] = await lokalise.languages.list({ project_id: projectId });
-    this.fetchLoader.succeed('Discovered: ' + keys.length + ' keys');
-
-    this.generateLoader.start('Transforming translations keys...');
-    const [translations, keyNames] = this.transformTranslations(keys, langs);
-    this.generateLoader.start('Finished transforming');
-
-    await this.generateTranslations(langs, translationsOutputPath, translations);
-    await this.generateInterface(interfaceOutputName, keyNames, interfaceOutputPath);
+    try {
+      const keys: Key[] = await lokalise.keys.list({ project_id: projectId, limit: 5000, include_translations: 1 });
+      const langs: Language[] = await lokalise.languages.list({ project_id: projectId });
+      this.fetchLoader.succeed('Discovered: ' + keys.length + ' keys');
+      this.generateLoader.start('Transforming translations keys...');
+      const [translations, keyNames] = this.transformTranslations(keys, langs);
+      this.generateLoader.start('Finished transforming');
+      await this.generateTranslations(langs, translationsOutputPath, translations);
+      await this.generateInterface(interfaceOutputName, keyNames, interfaceOutputPath);
+    } catch (e) {
+      this.fetchLoader.fail(`Error: ${ e.message }`);
+    }
   }
 
   private async generateTranslations(langs: Language[], translationsOutputPath: string, translations: any) {
@@ -83,6 +85,7 @@ export class Lokalise extends Command {
     }
   }
 
+//
   private async generateInterface(interfaceOutputName: string, keyNames: string[], interfaceOutputPath: string) {
     this.generateLoader.start('Generating ' + interfaceOutputName);
     let interfaceContent = `
@@ -90,39 +93,43 @@ export class Lokalise extends Command {
 // ANY CHANGES MADE TO THIS FILE WILL BE LOST
 
 export interface Translations {
-  ${ keyNames.map((key: string) => (key.split('.').length > 1 ? `'${ key }'` : key).concat(': string;')).join('\n  ') }
-}
-    `;
+  ${ keyNames
+      .map((key: string) => (key.split('.').length > 1 ? `'${ key }'` : key).concat(': string;'))
+      .join('\n  ')
+    } 
+} `;
     await outputFile(interfaceOutputPath + '/' + interfaceOutputName, interfaceContent, { encoding: 'utf8' });
     this.generateLoader.succeed('Generated ' + interfaceOutputName);
   }
 
-  private transformTranslations(keys: Key[], langs: Language[]) {
+  private transformTranslations(
+    keys: Key[],
+    langs: Language[],
+  ) {
     const keyNames: string[] = [];
-    const translations = keys
-      .sort((a, b) => (a.key_name as any)['web'] >= (b.key_name as any)['web'] ? 1 : -1)
-      .reduce((trans, key) => {
-        let keyName = (key.key_name as any)['web'].replace('::', '.');
-        keyNames.push(keyName);
-
-        if (key.is_plural) {
-          keyNames.push(keyName.concat('_plural'));
+    const translations = keys.sort((a, b) => (a.key_name as
+      any)['web'] >= (b.key_name as any)['web'] ? 1 : -1).reduce((trans, key) => {
+      let keyName = (key.key_name as
+        any)['web'].replace('::', '.');
+      keyNames.push(keyName);
+      if (key.is_plural) {
+        keyNames.push(keyName.concat('_plural'));
+      }
+      for (const translation of key.translations as Translation[]) {
+        if
+        (key.is_plural) {
+          const pluralTranslation = JSON.parse(translation.translation);
+          trans[translation.language_iso][keyName] = pluralTranslation['one'];
+          trans[translation.language_iso][keyName.concat('_plural')] = pluralTranslation['other'];
+        } else {
+          trans[translation.language_iso][keyName] = translation.translation;
         }
-
-        for (const translation of key.translations as Translation[]) {
-          if (key.is_plural) {
-            const pluralTranslation = JSON.parse(translation.translation);
-            trans[translation.language_iso][keyName] = pluralTranslation['one'];
-            trans[translation.language_iso][keyName.concat('_plural')] = pluralTranslation['other'];
-          } else {
-            trans[translation.language_iso][keyName] = translation.translation;
-          }
-        }
-        return trans;
-      }, langs.reduce((defaultVal: any, lang) => {
-        defaultVal[lang.lang_iso] = {};
-        return defaultVal;
-      }, {}));
+      }
+      return trans;
+    }, langs.reduce((defaultVal: any, lang) => {
+      defaultVal[lang.lang_iso] = {};
+      return defaultVal;
+    }, {}));
     return [translations, keyNames];
   }
 }
