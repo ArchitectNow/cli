@@ -4,7 +4,7 @@ export interface CliCommand {
   name: string;
   description: string;
   alias?: string;
-  options: CliCommandOption[]
+  options: CliCommandOption[];
 }
 
 export interface CliCommandOption<TType = any> {

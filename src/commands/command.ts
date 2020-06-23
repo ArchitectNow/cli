@@ -40,8 +40,8 @@ export abstract class Command {
     this.logger.info('');
     this.logger.info(this.command.description);
     this.logger.info(`
-usage: architectnow ${ this.command.name } [options]
-alias: architectnow ${ this.command.alias } [options]
+usage: architectnow ${this.command.name} [options]
+alias: architectnow ${this.command.alias} [options]
     `);
 
     await this.printHelpOptions();
@@ -50,13 +50,13 @@ alias: architectnow ${ this.command.alias } [options]
 
   private async printHelpOptions() {
     for (let opt of this.command.options) {
-      this.logger.info(`  --${ opt.name }`);
+      this.logger.info(`  --${opt.name}`);
       if (opt.alias) {
-        this.logger.log(`   alias: --${ opt.alias }`);
+        this.logger.log(`   alias: --${opt.alias}`);
       }
 
       if (opt.description) {
-        this.logger.log(`   description: ${ opt.description }`);
+        this.logger.log(`   description: ${opt.description}`);
       }
     }
   }

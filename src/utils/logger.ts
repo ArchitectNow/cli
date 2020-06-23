@@ -7,11 +7,15 @@ import { CommandMap } from '../models';
 export class Logger {
   private readonly newLine = '\n';
 
-  constructor(@inject(CommandsMap) private readonly commandsMap: CommandMap) {
-  }
+  constructor(@inject(CommandsMap) private readonly commandsMap: CommandMap) {}
 
   error(message: string | Error, withNewLine: boolean = false): void {
-    console.error(this.constructMessage(red(typeof message === 'string' ? message : message.message), withNewLine));
+    console.error(
+      this.constructMessage(
+        red(typeof message === 'string' ? message : message.message),
+        withNewLine,
+      ),
+    );
   }
 
   info(message: string, withNewLine: boolean = false): void {
@@ -25,7 +29,9 @@ export class Logger {
   availableCommands() {
     this.info(`
 Available commands:
-${ Object.values(this.commandsMap).map(command => `- ${ command.name }: ${ command.description }`).join(this.newLine) }
+${Object.values(this.commandsMap)
+  .map(command => `- ${command.name}: ${command.description}`)
+  .join(this.newLine)}
     `);
   }
 

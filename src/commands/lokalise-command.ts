@@ -3,7 +3,8 @@ import { CliCommand } from '../models';
 export const lokaliseCommand: CliCommand = {
   name: 'lokalise',
   alias: 'l',
-  description: 'Extract EN/ES translations and generate TypeScript interface from Lokalise',
+  description:
+    'Extract EN/ES translations and generate TypeScript interface from Lokalise',
   options: [
     {
       type: 'input',

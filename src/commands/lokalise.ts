@@ -15,7 +15,10 @@ export class Lokalise extends Command {
 
   private generateLoader: Ora = ora();
 
-  constructor(@inject(Logger) readonly _logger: Logger, @inject(CommandsMap) readonly _commandsMap: CommandMap) {
+  constructor(
+    @inject(Logger) readonly _logger: Logger,
+    @inject(CommandsMap) readonly _commandsMap: CommandMap,
+  ) {
     super(_logger, _commandsMap, 'lokalise');
   }
 
@@ -25,25 +28,29 @@ export class Lokalise extends Command {
       this.optionsLoader.start('Fetching existing options...');
       const existOptions = await this.getExistOptions<LokaliseCommandOption>();
       if (existOptions) {
-        this.optionsLoader.succeed('Found existing options. Executing with the following:');
+        this.optionsLoader.succeed(
+          'Found existing options. Executing with the following:',
+        );
         this.logger.log(JSON.stringify(existOptions, null, 2));
         await this.fetchAndGenerate(existOptions);
         return 0;
       } else {
         this.optionsLoader.info('Existing options not found. Setting up...');
-        const options: LokaliseCommandOption = await inquirer.prompt(this.command.options.map(opt => ({
-          type: opt.type,
-          name: opt.name,
-          message: opt.message,
-          default: opt.default,
-          validate: function(val: any) {
-            if (!opt.required) {
-              return true;
-            }
+        const options: LokaliseCommandOption = await inquirer.prompt(
+          this.command.options.map(opt => ({
+            type: opt.type,
+            name: opt.name,
+            message: opt.message,
+            default: opt.default,
+            validate: function (val: any) {
+              if (!opt.required) {
+                return true;
+              }
 
-            return !!val ? true : opt.validationMessage || false;
-          },
-        })));
+              return !!val ? true : opt.validationMessage || false;
+            },
+          })),
+        );
 
         this.optionsLoader.start('Storing options...');
         await this.storeOptions(options);
@@ -53,83 +60,125 @@ export class Lokalise extends Command {
       }
     }
 
-    this.logger.info('Executing "lokalise" with arugments will be supported in later version.');
+    this.logger.info(
+      'Executing "lokalise" with arugments will be supported in later version.',
+    );
     return 0;
   }
 
   private async fetchAndGenerate(options: LokaliseCommandOption) {
-    const { apiKey, projectId, translationsOutputPath, interfaceOutputPath, interfaceOutputName } = options;
+    const {
+      apiKey,
+      projectId,
+      translationsOutputPath,
+      interfaceOutputPath,
+      interfaceOutputName,
+    } = options;
     const lokalise = new LokaliseApi({ apiKey });
 
     this.fetchLoader.start('Fetching translations keys...');
     try {
-      const keys: Key[] = await lokalise.keys.list({ project_id: projectId, limit: 5000, include_translations: 1 });
-      const langs: Language[] = await lokalise.languages.list({ project_id: projectId });
+      const keys: Key[] = await lokalise.keys.list({
+        project_id: projectId,
+        limit: 5000,
+        include_translations: 1,
+      });
+      const langs: Language[] = await lokalise.languages.list({
+        project_id: projectId,
+      });
       this.fetchLoader.succeed('Discovered: ' + keys.length + ' keys');
       this.generateLoader.start('Transforming translations keys...');
       const [translations, keyNames] = this.transformTranslations(keys, langs);
       this.generateLoader.start('Finished transforming');
-      await this.generateTranslations(langs, translationsOutputPath, translations);
-      await this.generateInterface(interfaceOutputName, keyNames, interfaceOutputPath);
+      await this.generateTranslations(
+        langs,
+        translationsOutputPath,
+        translations,
+      );
+      await this.generateInterface(
+        interfaceOutputName,
+        keyNames,
+        interfaceOutputPath,
+      );
     } catch (e) {
-      this.fetchLoader.fail(`Error: ${ e.message }`);
+      this.fetchLoader.fail(`Error: ${e.message}`);
     }
   }
 
-  private async generateTranslations(langs: Language[], translationsOutputPath: string, translations: any) {
+  private async generateTranslations(
+    langs: Language[],
+    translationsOutputPath: string,
+    translations: any,
+  ) {
     for (const lang of langs) {
       const fileName = lang.lang_iso + '.json';
       this.generateLoader.start('Generating ' + fileName);
-      await outputJson(translationsOutputPath + '/' + fileName, translations[lang.lang_iso]);
+      await outputJson(
+        translationsOutputPath + '/' + fileName,
+        translations[lang.lang_iso],
+      );
       this.generateLoader.succeed('Generated ' + fileName);
     }
   }
 
-//
-  private async generateInterface(interfaceOutputName: string, keyNames: string[], interfaceOutputPath: string) {
+  //
+  private async generateInterface(
+    interfaceOutputName: string,
+    keyNames: string[],
+    interfaceOutputPath: string,
+  ) {
     this.generateLoader.start('Generating ' + interfaceOutputName);
     let interfaceContent = `
 // THIS FILE IS AUTO-GENERATED BY @architectnow/cli
 // ANY CHANGES MADE TO THIS FILE WILL BE LOST
 
 export interface Translations {
-  ${ keyNames
-      .map((key: string) => (key.split('.').length > 1 ? `'${ key }'` : key).concat(': string;'))
-      .join('\n  ')
-    } 
+  ${keyNames
+    .map((key: string) =>
+      (key.split('.').length > 1 ? `'${key}'` : key).concat(': string;'),
+    )
+    .join('\n  ')} 
 } `;
-    await outputFile(interfaceOutputPath + '/' + interfaceOutputName, interfaceContent, { encoding: 'utf8' });
+    await outputFile(
+      interfaceOutputPath + '/' + interfaceOutputName,
+      interfaceContent,
+      { encoding: 'utf8' },
+    );
     this.generateLoader.succeed('Generated ' + interfaceOutputName);
   }
 
-  private transformTranslations(
-    keys: Key[],
-    langs: Language[],
-  ) {
+  private transformTranslations(keys: Key[], langs: Language[]) {
     const keyNames: string[] = [];
-    const translations = keys.sort((a, b) => (a.key_name as
-      any)['web'] >= (b.key_name as any)['web'] ? 1 : -1).reduce((trans, key) => {
-      let keyName = (key.key_name as
-        any)['web'].replace('::', '.');
-      keyNames.push(keyName);
-      if (key.is_plural) {
-        keyNames.push(keyName.concat('_plural'));
-      }
-      for (const translation of key.translations as Translation[]) {
-        if
-        (key.is_plural) {
-          const pluralTranslation = JSON.parse(translation.translation);
-          trans[translation.language_iso][keyName] = pluralTranslation['one'];
-          trans[translation.language_iso][keyName.concat('_plural')] = pluralTranslation['other'];
-        } else {
-          trans[translation.language_iso][keyName] = translation.translation;
-        }
-      }
-      return trans;
-    }, langs.reduce((defaultVal: any, lang) => {
-      defaultVal[lang.lang_iso] = {};
-      return defaultVal;
-    }, {}));
+    const translations = keys
+      .sort((a, b) =>
+        (a.key_name as any)['web'] >= (b.key_name as any)['web'] ? 1 : -1,
+      )
+      .reduce(
+        (trans, key) => {
+          let keyName = (key.key_name as any)['web'].replace('::', '.');
+          keyNames.push(keyName);
+          if (key.is_plural) {
+            keyNames.push(keyName.concat('_plural'));
+          }
+          for (const translation of key.translations as Translation[]) {
+            if (key.is_plural) {
+              const pluralTranslation = JSON.parse(translation.translation);
+              trans[translation.language_iso][keyName] =
+                pluralTranslation['one'];
+              trans[translation.language_iso][keyName.concat('_plural')] =
+                pluralTranslation['other'];
+            } else {
+              trans[translation.language_iso][keyName] =
+                translation.translation;
+            }
+          }
+          return trans;
+        },
+        langs.reduce((defaultVal: any, lang) => {
+          defaultVal[lang.lang_iso] = {};
+          return defaultVal;
+        }, {}),
+      );
     return [translations, keyNames];
   }
 }

@@ -14,7 +14,10 @@ export class Permissions extends Command {
   private fetchLoader: Ora = ora();
   private generateLoader: Ora = ora();
 
-  constructor(@inject(Logger) readonly _logger: Logger, @inject(CommandsMap) readonly _commandsMap: CommandMap) {
+  constructor(
+    @inject(Logger) readonly _logger: Logger,
+    @inject(CommandsMap) readonly _commandsMap: CommandMap,
+  ) {
     super(_logger, _commandsMap, 'permissions');
   }
 
@@ -22,27 +25,33 @@ export class Permissions extends Command {
     this.logger.info(this.command.description);
     if (!args.length) {
       this.optionsLoader.start('Fetching existing options...');
-      const existOptions = await this.getExistOptions<PermissionsCommandOption>();
+      const existOptions = await this.getExistOptions<
+        PermissionsCommandOption
+      >();
       if (existOptions) {
-        this.optionsLoader.succeed('Found existing options. Executing with the following:');
+        this.optionsLoader.succeed(
+          'Found existing options. Executing with the following:',
+        );
         this.logger.log(JSON.stringify(existOptions, null, 2));
         await this.fetchAndGenerate(existOptions);
         return 0;
       } else {
         this.optionsLoader.info('Existing options not found. Setting up...');
-        const options: PermissionsCommandOption = await inquirer.prompt(this.command.options.map(opt => ({
-          type: opt.type,
-          name: opt.name,
-          message: opt.message,
-          default: opt.default,
-          validate: function(val: any) {
-            if (!opt.required) {
-              return true;
-            }
+        const options: PermissionsCommandOption = await inquirer.prompt(
+          this.command.options.map(opt => ({
+            type: opt.type,
+            name: opt.name,
+            message: opt.message,
+            default: opt.default,
+            validate: function (val: any) {
+              if (!opt.required) {
+                return true;
+              }
 
-            return !!val ? true : opt.validationMessage || false;
-          },
-        })));
+              return !!val ? true : opt.validationMessage || false;
+            },
+          })),
+        );
 
         this.optionsLoader.start('Storing options...');
         await this.storeOptions(options);
@@ -65,13 +74,20 @@ export class Permissions extends Command {
     this.generateLoader.succeed('Generated');
   }
 
-  private async generatePermissionsEnum(response: { [key: string]: any }, outputPath: string, outputName: string) {
+  private async generatePermissionsEnum(
+    response: { [key: string]: any },
+    outputPath: string,
+    outputName: string,
+  ) {
     try {
       const enumValues: string[] = [];
-      const convert = (permissionsMap: { [key: string]: any }, prefix?: string) => {
+      const convert = (
+        permissionsMap: { [key: string]: any },
+        prefix?: string,
+      ) => {
         for (const [key, val] of Object.entries(permissionsMap)) {
           if (typeof val === 'string') {
-            enumValues.push(`${ prefix ? prefix.concat(key) : key } = "${ val }"`);
+            enumValues.push(`${prefix ? prefix.concat(key) : key} = "${val}"`);
           } else {
             convert(val, key);
           }
@@ -84,11 +100,13 @@ export class Permissions extends Command {
 // ANY CHANGES MADE TO THIS FILE WILL BE LOST
 
 export enum PermissionNames {
-  ${ enumValues.sort().join(',\n  ') }
+  ${enumValues.sort().join(',\n  ')}
 }
       `;
 
-      await outputFile(outputPath + '/' + outputName, enumContent, { encoding: 'utf8' });
+      await outputFile(outputPath + '/' + outputName, enumContent, {
+        encoding: 'utf8',
+      });
     } catch (e) {
       this.logger.error(e);
       throw e;

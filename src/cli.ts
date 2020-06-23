@@ -12,8 +12,7 @@ export class CLI {
     @inject(Logger) private readonly logger: Logger,
     @inject(Permissions) private readonly permissionsCommand: Permissions,
     @inject(Lokalise) private readonly lokaliseCommand: Lokalise,
-  ) {
-  }
+  ) {}
 
   executeCli() {
     const [commandName, ...commandArgs] = this.cliArgs;
@@ -35,12 +34,13 @@ export class CLI {
   }
 
   private showInvalidCommandError(commandName: string): void {
-    this.logger.error(`"${ commandName }" is not a valid command.`);
+    this.logger.error(`"${commandName}" is not a valid command.`);
     this.logger.availableCommands();
   }
 
   private isValidCommand(commandName: string) {
-    return Object.values(this.commandsMap)
-      .some(command => command.name === commandName || command.alias === commandName);
+    return Object.values(this.commandsMap).some(
+      command => command.name === commandName || command.alias === commandName,
+    );
   }
 }
