@@ -76,7 +76,7 @@
     "@lokalise/node-api": "^4.0.1",
     "fs-extra": "^9.0.1",
     "inquirer": "7.2.0",
-    "kleur": "4.0.1",
+    "kleur": "4.0.2",
     "node-fetch": "^2.6.0",
     "ora": "4.0.4",
     "reflect-metadata": "0.1.13",
