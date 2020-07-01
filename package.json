@@ -69,7 +69,7 @@
     "semantic-release": "17.1.0",
     "tsdx": "0.13.2",
     "tslib": "2.0.0",
-    "typescript": "3.9.5"
+    "typescript": "3.9.6"
   },
   "dependencies": {
     "@angular-devkit/core": "9.1.9",
