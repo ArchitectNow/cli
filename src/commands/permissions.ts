@@ -9,7 +9,7 @@ import { Logger } from '../utils';
 import { Command } from './command';
 
 @singleton()
-export class Permissions extends Command {
+export class Permissions extends Command<PermissionsCommandOption> {
   private optionsLoader: Ora = ora();
   private fetchLoader: Ora = ora();
   private generateLoader: Ora = ora();
@@ -25,9 +25,7 @@ export class Permissions extends Command {
     this.logger.info(this.command.description);
     if (!args.length) {
       this.optionsLoader.start('Fetching existing options...');
-      const existOptions = await this.getExistOptions<
-        PermissionsCommandOption
-      >();
+      const existOptions = await this.getExistOptions();
       if (existOptions) {
         this.optionsLoader.succeed(
           'Found existing options. Executing with the following:',
@@ -58,6 +56,15 @@ export class Permissions extends Command {
         this.optionsLoader.succeed('Stored options');
         await this.fetchAndGenerate(options);
         return 0;
+      }
+    } else {
+      const [subCommand] = args;
+
+      switch (subCommand) {
+        case 'h':
+        case 'help':
+          await this.printHelp();
+          break;
       }
     }
 

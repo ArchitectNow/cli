@@ -9,7 +9,7 @@ import { Logger } from '../utils';
 import { Command } from './command';
 
 @singleton()
-export class Lokalise extends Command {
+export class Lokalise extends Command<LokaliseCommandOption> {
   private optionsLoader: Ora = ora();
   private fetchLoader: Ora = ora();
 
@@ -26,7 +26,7 @@ export class Lokalise extends Command {
     this.logger.info(this.command.description);
     if (!args.length) {
       this.optionsLoader.start('Fetching existing options...');
-      const existOptions = await this.getExistOptions<LokaliseCommandOption>();
+      const existOptions = await this.getExistOptions();
       if (existOptions) {
         this.optionsLoader.succeed(
           'Found existing options. Executing with the following:',
@@ -42,6 +42,7 @@ export class Lokalise extends Command {
             name: opt.name,
             message: opt.message,
             default: opt.default,
+            when: this.checkShowCondition(opt).bind(this),
             validate: function (val: any) {
               if (!opt.required) {
                 return true;
@@ -58,6 +59,15 @@ export class Lokalise extends Command {
         await this.fetchAndGenerate(options);
         return 0;
       }
+    } else {
+      const [subCommand] = args;
+
+      switch (subCommand) {
+        case 'h':
+        case 'help':
+          await this.printHelp();
+          break;
+      }
     }
 
     this.logger.info(
@@ -73,6 +83,7 @@ export class Lokalise extends Command {
       translationsOutputPath,
       interfaceOutputPath,
       interfaceOutputName,
+      shouldGenerateInterface,
     } = options;
     const lokalise = new LokaliseApi({ apiKey });
 
@@ -95,11 +106,13 @@ export class Lokalise extends Command {
         translationsOutputPath,
         translations,
       );
-      await this.generateInterface(
-        interfaceOutputName,
-        keyNames,
-        interfaceOutputPath,
-      );
+      if (shouldGenerateInterface) {
+        await this.generateInterface(
+          interfaceOutputName!,
+          keyNames,
+          interfaceOutputPath!,
+        );
+      }
     } catch (e) {
       this.fetchLoader.fail(`Error: ${e.message}`);
     }

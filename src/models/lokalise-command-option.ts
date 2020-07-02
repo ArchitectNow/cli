@@ -2,6 +2,7 @@ export interface LokaliseCommandOption {
   apiKey: string;
   projectId: string;
   translationsOutputPath: string;
-  interfaceOutputPath: string;
-  interfaceOutputName: string;
+  shouldGenerateInterface: boolean;
+  interfaceOutputPath?: string;
+  interfaceOutputName?: string;
 }

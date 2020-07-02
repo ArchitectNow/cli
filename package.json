@@ -66,17 +66,17 @@
     "husky": "4.2.5",
     "lint-staged": "10.2.11",
     "prettier": "2.0.5",
-    "semantic-release": "17.1.0",
+    "semantic-release": "17.1.1",
     "tsdx": "0.13.2",
     "tslib": "2.0.0",
-    "typescript": "3.9.5"
+    "typescript": "3.9.6"
   },
   "dependencies": {
-    "@angular-devkit/core": "9.1.9",
+    "@angular-devkit/core": "10.0.1",
     "@lokalise/node-api": "^4.0.1",
     "fs-extra": "^9.0.1",
-    "inquirer": "7.2.0",
-    "kleur": "4.0.1",
+    "inquirer": "7.3.0",
+    "kleur": "4.0.2",
     "node-fetch": "^2.6.0",
     "ora": "4.0.4",
     "reflect-metadata": "0.1.13",

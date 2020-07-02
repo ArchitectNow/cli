@@ -7,6 +7,22 @@ export interface CliCommand {
   options: CliCommandOption[];
 }
 
+export enum CliShowConditionOperand {
+  Eq = 'eq',
+  Neq = 'neq',
+  Gt = 'gt',
+  Gte = 'gte',
+  Lt = 'lt',
+  Lte = 'lte',
+  Ne = 'ne', // not exist aka null/undefined
+}
+
+export interface CliShowCondition {
+  field: string;
+  value: unknown;
+  operand: CliShowConditionOperand;
+}
+
 export interface CliCommandOption<TType = any> {
   type: keyof QuestionMap;
   name: string;
@@ -16,4 +32,5 @@ export interface CliCommandOption<TType = any> {
   validationMessage?: string;
   default?: TType;
   alias?: string;
+  showConditions?: CliShowCondition[];
 }

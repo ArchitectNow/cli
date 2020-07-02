@@ -1,4 +1,4 @@
-import { CliCommand } from '../models';
+import { CliCommand, CliShowConditionOperand } from '../models';
 
 export const lokaliseCommand: CliCommand = {
   name: 'lokalise',
@@ -34,22 +34,45 @@ export const lokaliseCommand: CliCommand = {
       required: false,
     },
     {
+      type: 'confirm',
+      name: 'shouldGenerateInterface',
+      alias: 'sgi',
+      description: 'Whether to generate TS interface',
+      default: true,
+      message: 'Should the CLI generate TS interface?',
+      required: false,
+    },
+    {
       type: 'input',
       name: 'interfaceOutputPath',
       alias: 'iop',
       description: 'Path of the TypeScript Interface output',
-      default: './src',
+      default: null,
       message: 'Where to generate the TypeScript interface file?',
       required: false,
+      showConditions: [
+        {
+          field: 'shouldGenerateInterface',
+          value: true,
+          operand: CliShowConditionOperand.Eq,
+        },
+      ],
     },
     {
       type: 'input',
       name: 'interfaceOutputName',
       alias: 'ion',
       description: 'Name of TypeScript Interface file',
-      default: 'translations.types.ts',
+      default: null,
       message: 'What to call the TypeScript interface file?',
       required: false,
+      showConditions: [
+        {
+          field: 'shouldGenerateInterface',
+          value: true,
+          operand: CliShowConditionOperand.Eq,
+        },
+      ],
     },
   ],
 };

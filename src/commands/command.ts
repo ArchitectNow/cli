@@ -1,8 +1,13 @@
 import { existsSync, outputJson, pathExists, readJson } from 'fs-extra';
-import { CliCommand, CommandMap } from '../models';
+import {
+  CliCommand,
+  CliCommandOption,
+  CliShowConditionOperand,
+  CommandMap,
+} from '../models';
 import { Logger } from '../utils';
 
-export abstract class Command {
+export abstract class Command<TOption = any> {
   protected commandKey: string;
   protected command: CliCommand;
 
@@ -15,7 +20,7 @@ export abstract class Command {
     this.command = commandsMap[this.commandKey];
   }
 
-  protected async getExistOptions<TOption = any>(): Promise<TOption | null> {
+  protected async getExistOptions(): Promise<TOption | null> {
     const cwd = process.cwd();
     const optionPath = cwd + '/.architectnow';
     if (!(await pathExists(optionPath))) {
@@ -30,15 +35,13 @@ export abstract class Command {
     return readJson(filePath);
   }
 
-  protected async storeOptions<TOption = any>(options: TOption): Promise<void> {
+  protected async storeOptions(options: TOption): Promise<void> {
     const cwd = process.cwd();
     const optionPath = cwd + '/.architectnow';
     await outputJson(optionPath + '/' + this.commandKey + '.json', options);
   }
 
   protected async printHelp() {
-    this.logger.info('');
-    this.logger.info(this.command.description);
     this.logger.info(`
 usage: architectnow ${this.command.name} [options]
 alias: architectnow ${this.command.alias} [options]
@@ -46,6 +49,51 @@ alias: architectnow ${this.command.alias} [options]
 
     await this.printHelpOptions();
     return 0;
+  }
+
+  protected checkShowCondition(
+    option: CliCommandOption,
+  ): (answers: TOption) => boolean {
+    return (answers: TOption) => {
+      if (option.showConditions == null || !option.showConditions.length) {
+        return true;
+      }
+
+      let show = true;
+
+      for (const { operand, value, field } of option.showConditions) {
+        const fieldValue = (answers as any)[field];
+
+        switch (operand) {
+          case CliShowConditionOperand.Eq:
+            show = fieldValue === value;
+            break;
+          case CliShowConditionOperand.Neq:
+            show = fieldValue !== value;
+            break;
+          case CliShowConditionOperand.Gt:
+            show = fieldValue > (value as number);
+            break;
+          case CliShowConditionOperand.Gte:
+            show = fieldValue >= (value as number);
+            break;
+          case CliShowConditionOperand.Lt:
+            show = fieldValue < (value as number);
+            break;
+          case CliShowConditionOperand.Lte:
+            show = fieldValue <= (value as number);
+            break;
+          case CliShowConditionOperand.Ne:
+            show = fieldValue == null;
+            break;
+          default:
+            show = true;
+            break;
+        }
+      }
+
+      return show;
+    };
   }
 
   private async printHelpOptions() {
