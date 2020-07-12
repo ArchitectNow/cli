@@ -72,7 +72,7 @@
     "typescript": "3.9.6"
   },
   "dependencies": {
-    "@angular-devkit/core": "10.0.1",
+    "@angular-devkit/core": "10.0.2",
     "@lokalise/node-api": "^5.0.0",
     "fs-extra": "^9.0.1",
     "inquirer": "7.3.0",
