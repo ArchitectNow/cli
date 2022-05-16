@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "9.0.1",
-    "@types/inquirer": "7.3.1",
+    "@types/inquirer": "8.2.1",
     "@types/node-fetch": "2.5.7",
     "commitizen": "4.2.1",
     "cz-conventional-changelog": "3.3.0",
@@ -75,7 +75,7 @@
     "@angular-devkit/core": "10.1.0",
     "@lokalise/node-api": "^5.0.0",
     "fs-extra": "^9.0.1",
-    "inquirer": "7.3.3",
+    "inquirer": "8.2.4",
     "kleur": "4.1.1",
     "node-fetch": "^2.6.0",
     "ora": "5.0.0",
